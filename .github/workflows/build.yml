@@ -1,0 +1,52 @@
+name: build CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+      - main
+
+jobs:
+  build:
+    name: 构建任务
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: 拉取仓库代码
+        id: checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: 配置 QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v3
+
+      - name: 配置 Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录 GitHub Packages Docker 镜像仓库
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 构建 Docker 镜像
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/386,linux/amd64,linux/arm,linux/arm64
+          push: true
+          tags: ghcr.io/goudanwoo/gaganode:0.0.300

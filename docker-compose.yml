@@ -1,0 +1,32 @@
+version: "3.8"
+name: "gaganode"
+
+services:
+
+
+  app:
+    image: "ghcr.io/goudanwoo/gaganode:0.0.300"
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "36060:36060/tcp"
+      - "36060:36060/udp"
+    environment:
+      TOKEN: ...
+
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: 1
+    networks:
+      net:
+
+
+networks:
+  net:
+    driver: bridge
+    ipam:
+      driver: default
